@@ -35,21 +35,29 @@ const ProductsPage = () => {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      if (USE_MOCK_DATA) {
-        setIsLoading(false);
-        return;
-      }
-
       try {
         setIsLoading(true);
+        
+        // Always use mock data if API fails or in development
+        if (USE_MOCK_DATA || import.meta.env.DEV) {
+          setData(mockProducts);
+          setIsLoading(false);
+          return;
+        }
+
         const response = await fetch(`${API_URL}/products`);
         if (!response.ok) throw new Error('Failed to fetch products');
         const productsData = await response.json();
         setData(productsData);
         setError(null);
       } catch (err) {
-        setError(err.message);
-        setData([]);
+        console.error('Fetch error:', err);
+        // Fallback to mock data if API fails
+        setData(mockProducts);
+        // Only show error if we're not using mock data
+        if (!USE_MOCK_DATA) {
+          setError('Failed to fetch products. Using sample data instead.');
+        }
       } finally {
         setIsLoading(false);
       }
