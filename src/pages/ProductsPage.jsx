@@ -15,8 +15,10 @@ import ErrorMessage from "../components/common/ErrorMessage";
 import ProductCard from "../components/products/ProductCard";
 
 // API URL configuration
-const apiUrl = import.meta.env.VITE_API_URL;
-const useMockData = import.meta.env.VITE_USE_MOCK_DATA === 'true';
+const API_CONFIG = {
+  url: import.meta.env.VITE_API_URL || '/api',
+  useMockData: import.meta.env.VITE_USE_MOCK_DATA === 'true'
+};
 
 const ProductsPage = () => {
   const [showAddProduct, setShowAddProduct] = useState(false);
@@ -24,7 +26,7 @@ const ProductsPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [error, setError] = useState(null);
-  const [data, setData] = useState(useMockData ? mockProducts : []);
+  const [data, setData] = useState(API_CONFIG.useMockData ? mockProducts : []);
   const [view, setView] = useState('table'); // 'table' or 'grid'
   const [filters, setFilters] = useState({
     category: 'all',
@@ -38,26 +40,20 @@ const ProductsPage = () => {
       try {
         setIsLoading(true);
         
-        // Always use mock data if API fails or in development
-        if (useMockData || import.meta.env.DEV) {
+        if (API_CONFIG.useMockData) {
           setData(mockProducts);
-          setIsLoading(false);
           return;
         }
 
-        const response = await fetch(`${apiUrl}/products`);
+        const response = await fetch(`${API_CONFIG.url}/products`);
         if (!response.ok) throw new Error('Failed to fetch products');
         const productsData = await response.json();
         setData(productsData);
         setError(null);
       } catch (err) {
         console.error('Fetch error:', err);
-        // Fallback to mock data if API fails
         setData(mockProducts);
-        // Only show error if we're not using mock data
-        if (!useMockData) {
-          setError('Failed to fetch products. Using sample data instead.');
-        }
+        setError('Using sample data');
       } finally {
         setIsLoading(false);
       }
