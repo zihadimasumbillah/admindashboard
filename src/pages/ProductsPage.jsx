@@ -15,8 +15,8 @@ import ErrorMessage from "../components/common/ErrorMessage";
 import ProductCard from "../components/products/ProductCard";
 
 // API URL configuration
-const API_URL = import.meta.env.VITE_API_URL || '/api';
-const USE_MOCK_DATA = import.meta.env.VITE_USE_MOCK_DATA === 'true';
+const apiUrl = import.meta.env.VITE_API_URL;
+const useMockData = import.meta.env.VITE_USE_MOCK_DATA === 'true';
 
 const ProductsPage = () => {
   const [showAddProduct, setShowAddProduct] = useState(false);
@@ -24,7 +24,7 @@ const ProductsPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [error, setError] = useState(null);
-  const [data, setData] = useState(USE_MOCK_DATA ? mockProducts : []);
+  const [data, setData] = useState(useMockData ? mockProducts : []);
   const [view, setView] = useState('table'); // 'table' or 'grid'
   const [filters, setFilters] = useState({
     category: 'all',
@@ -39,13 +39,13 @@ const ProductsPage = () => {
         setIsLoading(true);
         
         // Always use mock data if API fails or in development
-        if (USE_MOCK_DATA || import.meta.env.DEV) {
+        if (useMockData || import.meta.env.DEV) {
           setData(mockProducts);
           setIsLoading(false);
           return;
         }
 
-        const response = await fetch(`${API_URL}/products`);
+        const response = await fetch(`${apiUrl}/products`);
         if (!response.ok) throw new Error('Failed to fetch products');
         const productsData = await response.json();
         setData(productsData);
@@ -55,7 +55,7 @@ const ProductsPage = () => {
         // Fallback to mock data if API fails
         setData(mockProducts);
         // Only show error if we're not using mock data
-        if (!USE_MOCK_DATA) {
+        if (!useMockData) {
           setError('Failed to fetch products. Using sample data instead.');
         }
       } finally {

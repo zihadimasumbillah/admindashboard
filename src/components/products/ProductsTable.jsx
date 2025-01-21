@@ -20,51 +20,54 @@ SearchInput.propTypes = {
   onSearch: PropTypes.func.isRequired
 };
 
-const TableActions = ({ selectedCount, onEdit, onDelete, isLoading }) => (
-  <div className="flex items-center gap-2">
-    <motion.button
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      className={`p-2 rounded-lg transition-colors duration-200 ${
-        selectedCount === 0 
-          ? 'bg-gray-800/30 text-gray-500 cursor-not-allowed'
-          : 'bg-gray-800/50 hover:bg-gray-700/50 text-gray-400 hover:text-gray-300'
-      }`}
-      onClick={onEdit}
-      disabled={selectedCount === 0 || isLoading}
-    >
-      <Edit className="w-4 h-4" />
-    </motion.button>
-    <motion.button
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      className={`p-2 rounded-lg transition-colors duration-200 ${
-        selectedCount === 0 
-          ? 'bg-gray-800/30 text-red-500/50 cursor-not-allowed'
-          : 'bg-gray-800/50 hover:bg-red-500/20 text-red-400 hover:text-red-300'
-      }`}
-      onClick={onDelete}
-      disabled={selectedCount === 0 || isLoading}
-    >
-      <Trash2 className="w-4 h-4" />
-    </motion.button>
-    {selectedCount > 0 && (
-      <span className="text-sm text-gray-400 ml-2">
-        {selectedCount} selected
-      </span>
-    )}
-  </div>
-);
+const TableActions = ({ 
+  selectedCount, 
+  onEdit, 
+  onDelete, 
+  isLoading = false // Using default parameter
+}) => {
+  return (
+    <div className="flex items-center gap-2">
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className={`p-2 rounded-lg transition-colors duration-200 ${
+          selectedCount === 0 
+            ? 'bg-gray-800/30 text-gray-500 cursor-not-allowed'
+            : 'bg-gray-800/50 hover:bg-gray-700/50 text-gray-400 hover:text-gray-300'
+        }`}
+        onClick={onEdit}
+        disabled={selectedCount === 0 || isLoading}
+      >
+        <Edit className="w-4 h-4" />
+      </motion.button>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className={`p-2 rounded-lg transition-colors duration-200 ${
+          selectedCount === 0 
+            ? 'bg-gray-800/30 text-red-500/50 cursor-not-allowed'
+            : 'bg-gray-800/50 hover:bg-red-500/20 text-red-400 hover:text-red-300'
+        }`}
+        onClick={onDelete}
+        disabled={selectedCount === 0 || isLoading}
+      >
+        <Trash2 className="w-4 h-4" />
+      </motion.button>
+      {selectedCount > 0 && (
+        <span className="text-sm text-gray-400 ml-2">
+          {selectedCount} selected
+        </span>
+      )}
+    </div>
+  );
+};
 
 TableActions.propTypes = {
   selectedCount: PropTypes.number.isRequired,
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   isLoading: PropTypes.bool
-};
-
-TableActions.defaultProps = {
-  isLoading: false
 };
 
 const TableHeader = ({ onSelectAll, selectedProducts }) => (
