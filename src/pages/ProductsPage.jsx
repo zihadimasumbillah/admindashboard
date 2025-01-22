@@ -54,11 +54,10 @@ const ProductsPage = () => {
     const fetchProducts = async () => {
       try {
         setIsLoading(true);
-        // Always use mock data since there's no backend
+        // Always use mock data
         setData(mockProducts);
       } catch (err) {
         setError(err.message);
-        // Fallback to mock data
         setData(mockProducts);
       } finally {
         setIsLoading(false);
