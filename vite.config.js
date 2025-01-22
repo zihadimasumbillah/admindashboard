@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => {
     },
     define: {
       'import.meta.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL || '/api'),
-      'import.meta.env.VITE_USE_MOCK_DATA': JSON.stringify(env.VITE_USE_MOCK_DATA === 'true'),
+      'import.meta.env.VITE_USE_MOCK_DATA': JSON.stringify(true), 
       __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
     },
     server: {

@@ -49,23 +49,17 @@ const ProductsPage = () => {
     direction: 'ascending'
   });
 
-  // Fetch products
+  // Update product fetching logic
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setIsLoading(true);
-        // Use mock data in development
-        if (import.meta.env.DEV) {
-          setData(mockProducts);
-        } else {
-          const response = await fetch('/api/products');
-          if (!response.ok) throw new Error('Failed to fetch products');
-          const data = await response.json();
-          setData(data);
-        }
+        // Always use mock data since there's no backend
+        setData(mockProducts);
       } catch (err) {
         setError(err.message);
-        setData(mockProducts); 
+        // Fallback to mock data
+        setData(mockProducts);
       } finally {
         setIsLoading(false);
       }
