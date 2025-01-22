@@ -1,264 +1,222 @@
-import { motion } from "framer-motion";
-import { Edit, Search, Trash2 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { memo, useCallback, useMemo } from 'react';
+import { ChevronUp, ChevronDown, Edit, Trash2 } from 'lucide-react';
 import PropTypes from 'prop-types';
+import { motion, AnimatePresence } from 'framer-motion';
 
-// Subcomponents
-const SearchInput = ({ onSearch }) => (
-  <div className="relative w-full sm:w-72">
-    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-    <input
-      type="text"
-      placeholder="Search products..."
-      className="w-full pl-10 pr-4 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-      onChange={(e) => onSearch(e.target.value)}
-    />
-  </div>
-);
-
-SearchInput.propTypes = {
-  onSearch: PropTypes.func.isRequired
-};
-
-const TableActions = ({ 
-  selectedCount, 
+const ProductsTable = memo(({ 
+  products, 
+  selectedProducts, 
+  setSelectedProducts, 
   onEdit, 
   onDelete, 
-  isLoading = false // Using default parameter
+  sortConfig, 
+  onSort 
 }) => {
-  return (
-    <div className="flex items-center gap-2">
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className={`p-2 rounded-lg transition-colors duration-200 ${
-          selectedCount === 0 
-            ? 'bg-gray-800/30 text-gray-500 cursor-not-allowed'
-            : 'bg-gray-800/50 hover:bg-gray-700/50 text-gray-400 hover:text-gray-300'
-        }`}
-        onClick={onEdit}
-        disabled={selectedCount === 0 || isLoading}
-      >
-        <Edit className="w-4 h-4" />
-      </motion.button>
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className={`p-2 rounded-lg transition-colors duration-200 ${
-          selectedCount === 0 
-            ? 'bg-gray-800/30 text-red-500/50 cursor-not-allowed'
-            : 'bg-gray-800/50 hover:bg-red-500/20 text-red-400 hover:text-red-300'
-        }`}
-        onClick={onDelete}
-        disabled={selectedCount === 0 || isLoading}
-      >
-        <Trash2 className="w-4 h-4" />
-      </motion.button>
-      {selectedCount > 0 && (
-        <span className="text-sm text-gray-400 ml-2">
-          {selectedCount} selected
-        </span>
-      )}
-    </div>
-  );
-};
+  // Memoize handlers
+  const handleSelectAll = useCallback(() => {
+    setSelectedProducts(
+      selectedProducts.length === products.length ? [] : products.map(p => p.id)
+    );
+  }, [products, selectedProducts, setSelectedProducts]);
 
-TableActions.propTypes = {
-  selectedCount: PropTypes.number.isRequired,
-  onEdit: PropTypes.func.isRequired,
-  onDelete: PropTypes.func.isRequired,
-  isLoading: PropTypes.bool
-};
-
-const TableHeader = ({ onSelectAll, selectedProducts }) => (
-  <thead>
-    <tr>
-      <th className="p-4">
-        <input
-          type="checkbox"
-          checked={selectedProducts.length > 0}
-          onChange={onSelectAll}
-          className="rounded border-gray-700/50"
-        />
-      </th>
-      <th className="p-4 text-left text-sm font-medium text-gray-400">Product</th>
-      <th className="p-4 text-left text-sm font-medium text-gray-400">Category</th>
-      <th className="p-4 text-left text-sm font-medium text-gray-400">Price</th>
-      <th className="p-4 text-left text-sm font-medium text-gray-400">Stock</th>
-      <th className="p-4 text-left text-sm font-medium text-gray-400">Sales</th>
-    </tr>
-  </thead>
-);
-
-TableHeader.propTypes = {
-  onSelectAll: PropTypes.func.isRequired,
-  selectedProducts: PropTypes.array.isRequired
-};
-
-const TableBody = ({ products, selectedProducts, onSelect, loading }) => (
-  <tbody className="divide-y divide-gray-700/50">
-    {loading ? (
-      <tr><td colSpan="6" className="text-center py-4 text-gray-400">Loading...</td></tr>
-    ) : (
-      products.map(product => (
-        <tr key={product.id}>
-          <td className="p-4">
-            <input
-              type="checkbox"
-              checked={selectedProducts.includes(product.id)}
-              onChange={() => onSelect(product.id)}
-              className="rounded border-gray-700/50"
-            />
-          </td>
-          <td className="p-4 text-gray-100">{product.name}</td>
-          <td className="p-4 text-gray-400">{product.category}</td>
-          <td className="p-4 text-gray-100">${product.price}</td>
-          <td className="p-4 text-gray-400">{product.stock}</td>
-          <td className="p-4 text-gray-400">{product.sales}</td>
-        </tr>
-      ))
-    )}
-  </tbody>
-);
-
-TableBody.propTypes = {
-  products: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.number.isRequired,
-      name: PropTypes.string.isRequired,
-      category: PropTypes.string.isRequired,
-      price: PropTypes.number.isRequired,
-      stock: PropTypes.number.isRequired,
-      sales: PropTypes.number.isRequired
-    })
-  ).isRequired,
-  selectedProducts: PropTypes.array.isRequired,
-  onSelect: PropTypes.func.isRequired,
-  loading: PropTypes.bool.isRequired
-};
-
-const Pagination = ({ currentPage, totalPages, onPageChange }) => (
-  <div className="flex justify-center gap-2 mt-4">
-    {Array.from({ length: totalPages }, (_, i) => (
-      <button
-        key={i}
-        onClick={() => onPageChange(i + 1)}
-        className={`px-3 py-1 rounded-lg ${
-          currentPage === i + 1 
-            ? 'bg-indigo-500 text-white' 
-            : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
-        }`}
-      >
-        {i + 1}
-      </button>
-    ))}
-  </div>
-);
-
-Pagination.propTypes = {
-  currentPage: PropTypes.number.isRequired,
-  totalPages: PropTypes.number.isRequired,  
-  onPageChange: PropTypes.func.isRequired
-};
-
-const ProductsTable = ({ 
-  filters, 
-  currentPage,
-  selectedProducts,
-  setSelectedProducts,
-  onPageChange,
-  loading,
-  data // Add data prop
-}) => {
-  const itemsPerPage = 10;
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const paginatedProducts = useMemo(() => {
-    if (!data) return [];
-    
-    return data
-      .filter(product => {
-        // Apply filters
-        if (filters.category !== 'all' && product.category !== filters.category) return false;
-        if (filters.stock === 'low' && product.stock > 10) return false;
-        if (filters.stock === 'out' && product.stock === 0) return false;
-        
-        // Apply search
-        return product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-               product.category.toLowerCase().includes(searchTerm.toLowerCase());
-      })
-      .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  }, [currentPage, searchTerm, data, filters]);
-
-  const totalPages = data ? Math.ceil(data.length / itemsPerPage) : 0;
-
-  const handleSelectAll = () => {
-    if (selectedProducts.length > 0) {
-      setSelectedProducts([]);
-    } else {
-      setSelectedProducts(paginatedProducts.map(p => p.id));
-    }
-  };
-
-  const handleSelect = (productId) => {
+  const handleSelectOne = useCallback((productId) => {
     setSelectedProducts(prev => 
-      prev.includes(productId)
+      prev.includes(productId) 
         ? prev.filter(id => id !== productId)
         : [...prev, productId]
     );
-  };
+  }, [setSelectedProducts]);
+
+  // Memoize sort icon
+  const getSortIcon = useCallback((columnName) => {
+    if (!sortConfig || sortConfig.key !== columnName) {
+      return null;
+    }
+    return sortConfig.direction === 'ascending' ? 
+      <ChevronUp className="w-4 h-4" /> : 
+      <ChevronDown className="w-4 h-4" />;
+  }, [sortConfig]);
+
+  // Memoize sorted products
+  const sortedProducts = useMemo(() => {
+    if (!sortConfig) return products;
+    
+    return [...products].sort((a, b) => {
+      const direction = sortConfig.direction === 'ascending' ? 1 : -1;
+      
+      switch (sortConfig.key) {
+        case 'name':
+          return direction * a.name.localeCompare(b.name);
+        case 'price':
+          return direction * (a.price - b.price);
+        case 'stock':
+          return direction * (a.stock - b.stock);
+        default:
+          return 0;
+      }
+    });
+  }, [products, sortConfig]);
+
+  const handleSort = useCallback((columnName) => {
+    onSort({
+      key: columnName,
+      direction: sortConfig?.key === columnName && sortConfig?.direction === 'ascending' 
+        ? 'descending' 
+        : 'ascending'
+    });
+  }, [onSort, sortConfig]);
 
   return (
-    <motion.div className="bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-gray-700/50">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <SearchInput onSearch={setSearchTerm} />
-        <TableActions 
-          selectedCount={selectedProducts.length} 
-          onEdit={() => console.log('Edit')} 
-          onDelete={() => console.log('Delete')} 
-          isLoading={loading} 
-        />
-      </div>
-      
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-700">
-          <TableHeader 
-            onSelectAll={handleSelectAll}
-            selectedProducts={selectedProducts}
-          />
-          <TableBody 
-            products={paginatedProducts}
-            selectedProducts={selectedProducts}
-            onSelect={handleSelect}
-            loading={loading}
-          />
-        </table>
-      </div>
-
-      <Pagination 
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={onPageChange}
-      />
-    </motion.div>
+    <div className="w-full">
+      <table className="min-w-full divide-y divide-gray-700/50">
+        <thead className="text-xs md:text-sm text-gray-400 uppercase bg-gray-800/50">
+          <tr>
+            <th scope="col" className="p-4 w-[40px]">
+              <input
+                type="checkbox"
+                className="rounded bg-gray-700 border-gray-600 text-indigo-500 
+                  focus:ring-indigo-500/50"
+                checked={selectedProducts.length === products.length}
+                onChange={handleSelectAll}
+              />
+            </th>
+            <th 
+              scope="col"
+              className="px-4 py-3 min-w-[200px] cursor-pointer hover:bg-gray-700/50"
+              onClick={() => handleSort('name')}
+            >
+              <div className="flex items-center gap-1">
+                Product Name
+                {getSortIcon('name')}
+              </div>
+            </th>
+            <th scope="col" className="px-4 py-3 min-w-[120px]">Category</th>
+            <th 
+              scope="col"
+              className="px-4 py-3 min-w-[120px] cursor-pointer hover:bg-gray-700/50"
+              onClick={() => handleSort('stock')}
+            >
+              <div className="flex items-center gap-1">
+                Stock
+                {getSortIcon('stock')}
+              </div>
+            </th>
+            <th 
+              scope="col"
+              className="px-4 py-3 min-w-[100px] cursor-pointer hover:bg-gray-700/50"
+              onClick={() => handleSort('price')}
+            >
+              <div className="flex items-center gap-1">
+                Price
+                {getSortIcon('price')}
+              </div>
+            </th>
+            <th scope="col" className="px-4 py-3 min-w-[100px]">Sales</th>
+            <th scope="col" className="px-4 py-3 min-w-[100px] text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-700/50 bg-gray-800/20">
+          <AnimatePresence>
+            {sortedProducts.map(product => (
+              <motion.tr 
+                key={product.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="bg-gray-800/20 backdrop-blur-sm hover:bg-gray-800/40 text-sm md:text-base"
+              >
+                <td className="p-4 w-[40px]">
+                  <input
+                    type="checkbox"
+                    className="rounded bg-gray-700 border-gray-600 text-indigo-500 
+                      focus:ring-indigo-500/50"
+                    checked={selectedProducts.includes(product.id)}
+                    onChange={() => handleSelectOne(product.id)}
+                  />
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  <div className="flex items-center gap-3">
+                    <img 
+                      src={product.image} 
+                      alt={product.name}
+                      className="w-12 h-12 rounded-lg object-cover"
+                    />
+                    <span className="font-medium text-gray-100">{product.name}</span>
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-gray-300">{product.category}</td>
+                <td className="px-4 py-3">
+                  <span className={`px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap
+                    ${product.stock === 0 
+                      ? 'bg-red-500/10 text-red-400'
+                      : product.stock < 10 
+                        ? 'bg-amber-500/10 text-amber-400'
+                        : 'bg-emerald-500/10 text-emerald-400'
+                    }`}
+                  >
+                    {product.stock === 0 ? 'Out of Stock' :
+                     product.stock < 10 ? 'Low Stock' :
+                     `${product.stock} in Stock`}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-gray-300">
+                  ${product.price.toFixed(2)}
+                </td>
+                <td className="px-4 py-3 text-gray-300">
+                  {product.sales}
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center justify-end gap-2">
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => onEdit(product)}
+                      className="p-2 rounded-lg bg-gray-700/50 hover:bg-gray-600/50 
+                        text-gray-300 transition-colors"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => onDelete(product.id)}
+                      className="p-2 rounded-lg bg-gray-700/50 hover:bg-red-500/50 
+                        text-gray-300 hover:text-red-400 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </motion.button>
+                  </div>
+                </td>
+              </motion.tr>
+            ))}
+          </AnimatePresence>
+        </tbody>
+      </table>
+    </div>
   );
-};
+});
+
+ProductsTable.displayName = 'ProductsTable';
 
 ProductsTable.propTypes = {
-  filters: PropTypes.object,
-  currentPage: PropTypes.number.isRequired,
-  selectedProducts: PropTypes.arrayOf(PropTypes.number).isRequired,
-  setSelectedProducts: PropTypes.func.isRequired,
-  onPageChange: PropTypes.func.isRequired,
-  loading: PropTypes.bool,
-  data: PropTypes.arrayOf(PropTypes.shape({
+  products: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
     category: PropTypes.string.isRequired,
     price: PropTypes.number.isRequired,
     stock: PropTypes.number.isRequired,
-    sales: PropTypes.number.isRequired
-  }))
+    sales: PropTypes.number.isRequired,
+    image: PropTypes.string.isRequired
+  })).isRequired,
+  selectedProducts: PropTypes.arrayOf(PropTypes.number).isRequired,
+  setSelectedProducts: PropTypes.func.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  sortConfig: PropTypes.shape({
+    key: PropTypes.string,
+    direction: PropTypes.oneOf(['ascending', 'descending'])
+  }),
+  onSort: PropTypes.func.isRequired
 };
 
 export default ProductsTable;

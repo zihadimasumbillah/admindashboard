@@ -6,9 +6,9 @@ import { BarChart2 } from "lucide-react";
 const salesData = [
   { category: "Electronics", current: 82000, previous: 75000 },
   { category: "Fashion", current: 67000, previous: 62000 },
-  { category: "Home", current: 54000, previous: 48000 },
-  { category: "Beauty", current: 43000, previous: 38000 },
-  { category: "Sports", current: 35000, previous: 31000 }
+  { category: "Home & Living", current: 54000, previous: 48000 },
+  { category: "Sports", current: 43000, previous: 38000 },
+  { category: "Books", current: 35000, previous: 31000 }
 ];
 
 const SalesPerformanceChart = () => {
