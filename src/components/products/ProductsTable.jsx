@@ -5,27 +5,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const ProductsTable = memo(({ 
   products, 
-  selectedProducts, 
-  setSelectedProducts, 
   onEdit, 
   onDelete, 
   sortConfig, 
   onSort 
 }) => {
-  // Memoize handlers
-  const handleSelectAll = useCallback(() => {
-    setSelectedProducts(
-      selectedProducts.length === products.length ? [] : products.map(p => p.id)
-    );
-  }, [products, selectedProducts, setSelectedProducts]);
+  
 
-  const handleSelectOne = useCallback((productId) => {
-    setSelectedProducts(prev => 
-      prev.includes(productId) 
-        ? prev.filter(id => id !== productId)
-        : [...prev, productId]
-    );
-  }, [setSelectedProducts]);
+ 
 
   // Memoize sort icon
   const getSortIcon = useCallback((columnName) => {
@@ -69,20 +56,19 @@ const ProductsTable = memo(({
   return (
     <div className="w-full">
       <table className="min-w-full divide-y divide-gray-700/50">
-        <thead className="text-xs md:text-sm text-gray-400 uppercase bg-gray-800/50">
+        <thead className="text-xs md:text-sm text-gray-300 uppercase bg-gray-800/50">
           <tr>
-            <th scope="col" className="p-4 w-[40px]">
-              <input
-                type="checkbox"
-                className="rounded bg-gray-700 border-gray-600 text-indigo-500 
-                  focus:ring-indigo-500/50"
-                checked={selectedProducts.length === products.length}
-                onChange={handleSelectAll}
-              />
+           
+
+            {/* Image header */}
+            <th scope="col" className="px-6 py-4 w-[100px] font-medium">
+              Image
             </th>
+
+            {/* Product Name header */}
             <th 
               scope="col"
-              className="px-4 py-3 min-w-[200px] cursor-pointer hover:bg-gray-700/50"
+              className="px-6 py-4 min-w-[200px] text-left font-medium cursor-pointer hover:bg-gray-700/50"
               onClick={() => handleSort('name')}
             >
               <div className="flex items-center gap-1">
@@ -90,10 +76,16 @@ const ProductsTable = memo(({
                 {getSortIcon('name')}
               </div>
             </th>
-            <th scope="col" className="px-4 py-3 min-w-[120px]">Category</th>
+
+            {/* Category header */}
+            <th scope="col" className="px-6 py-4 min-w-[120px] text-left font-medium">
+              Category
+            </th>
+
+            {/* Stock header */}
             <th 
               scope="col"
-              className="px-4 py-3 min-w-[120px] cursor-pointer hover:bg-gray-700/50"
+              className="px-6 py-4 min-w-[100px] text-left font-medium cursor-pointer hover:bg-gray-700/50"
               onClick={() => handleSort('stock')}
             >
               <div className="flex items-center gap-1">
@@ -101,9 +93,11 @@ const ProductsTable = memo(({
                 {getSortIcon('stock')}
               </div>
             </th>
+
+            {/* Price header */}
             <th 
               scope="col"
-              className="px-4 py-3 min-w-[100px] cursor-pointer hover:bg-gray-700/50"
+              className="px-6 py-4 min-w-[100px] text-left font-medium cursor-pointer hover:bg-gray-700/50"
               onClick={() => handleSort('price')}
             >
               <div className="flex items-center gap-1">
@@ -111,8 +105,16 @@ const ProductsTable = memo(({
                 {getSortIcon('price')}
               </div>
             </th>
-            <th scope="col" className="px-4 py-3 min-w-[100px]">Sales</th>
-            <th scope="col" className="px-4 py-3 min-w-[100px] text-right">Actions</th>
+
+            {/* Sales header */}
+            <th scope="col" className="p-2 min-w-[80px] text-left">
+              Sales
+            </th>
+
+            {/* Actions header */}
+            <th scope="col" className="px-6 py-4 w-[100px] text-right font-medium">
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-700/50 bg-gray-800/20">
@@ -125,27 +127,19 @@ const ProductsTable = memo(({
                 exit={{ opacity: 0 }}
                 className="bg-gray-800/20 backdrop-blur-sm hover:bg-gray-800/40 text-sm md:text-base"
               >
-                <td className="p-4 w-[40px]">
-                  <input
-                    type="checkbox"
-                    className="rounded bg-gray-700 border-gray-600 text-indigo-500 
-                      focus:ring-indigo-500/50"
-                    checked={selectedProducts.includes(product.id)}
-                    onChange={() => handleSelectOne(product.id)}
+               
+                <td className="px-6 py-4">
+                  <img 
+                    src={product.image} 
+                    alt={product.name}
+                    className="w-12 h-12 rounded-lg object-cover"
                   />
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  <div className="flex items-center gap-3">
-                    <img 
-                      src={product.image} 
-                      alt={product.name}
-                      className="w-12 h-12 rounded-lg object-cover"
-                    />
-                    <span className="font-medium text-gray-100">{product.name}</span>
-                  </div>
+                <td className="px-6 py-4">
+                  <div className="font-medium text-gray-200">{product.name}</div>
                 </td>
-                <td className="px-4 py-3 text-gray-300">{product.category}</td>
-                <td className="px-4 py-3">
+                <td className="px-6 py-4 text-gray-300">{product.category}</td>
+                <td className="px-6 py-4">
                   <span className={`px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap
                     ${product.stock === 0 
                       ? 'bg-red-500/10 text-red-400'
@@ -159,20 +153,20 @@ const ProductsTable = memo(({
                      `${product.stock} in Stock`}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-gray-300">
+                <td className="px-6 py-4 text-gray-300">
                   ${product.price.toFixed(2)}
                 </td>
-                <td className="px-4 py-3 text-gray-300">
+                <td className="px-6 py-4 text-gray-300">
                   {product.sales}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-6 py-4">
                   <div className="flex items-center justify-end gap-2">
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={() => onEdit(product)}
-                      className="p-2 rounded-lg bg-gray-700/50 hover:bg-gray-600/50 
-                        text-gray-300 transition-colors"
+                      className="p-2 rounded-lg bg-gray-700/50 hover:bg-indigo-500/50 
+                        text-gray-300 hover:text-indigo-400 transition-colors"
                     >
                       <Edit className="w-4 h-4" />
                     </motion.button>

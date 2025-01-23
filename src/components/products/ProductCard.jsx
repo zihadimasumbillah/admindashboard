@@ -30,8 +30,8 @@ const ProductCard = ({ product, onEdit, onDelete, custom }) => {
   const stockStatus = product.stock === 0 
     ? { color: 'red', text: 'Out of Stock' }
     : product.stock < 10 
-      ? { color: 'amber', text: 'Low Stock' }
-      : { color: 'emerald', text: 'In Stock' };
+      ? { color: 'amber', text: `Low Stock (${product.stock})` }
+      : { color: 'emerald', text: `${product.stock} in Stock` };
 
   return (
     <motion.div
@@ -42,16 +42,16 @@ const ProductCard = ({ product, onEdit, onDelete, custom }) => {
       exit="hidden"
       custom={custom}
       whileHover={{ y: -5, scale: 1.02 }}
-      className="group relative bg-gray-800/40 backdrop-blur-sm rounded-xl 
+      className="w-full max-w-sm bg-gray-800/40 backdrop-blur-sm rounded-xl 
         border border-gray-700/50 overflow-hidden hover:border-indigo-500/50 
         transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/10"
     >
-      {/* Image Container */}
-      <div className="relative aspect-square overflow-hidden">
+      {/* Image Container with fixed height */}
+      <div className="relative h-48 overflow-hidden">
         <motion.img 
           src={product.image} 
           alt={product.name}
-          className="object-cover w-full h-full"
+          className="w-full h-full object-cover"
           whileHover={{ scale: 1.05 }}
           transition={{ duration: 0.3 }}
         />
@@ -59,8 +59,8 @@ const ProductCard = ({ product, onEdit, onDelete, custom }) => {
       </div>
 
       {/* Content */}
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-4 mb-3">
+      <div className="p-4 space-y-3">
+        <div className="flex items-start justify-between gap-4">
           <div>
             <h3 className="text-gray-100 font-medium line-clamp-1">{product.name}</h3>
             <p className="text-gray-400 text-sm">{product.category}</p>
@@ -71,13 +71,16 @@ const ProductCard = ({ product, onEdit, onDelete, custom }) => {
           </div>
         </div>
 
-        {/* Stock Status */}
+        {/* Stats Row */}
         <div className="flex items-center justify-between">
           <span className={`
             px-2.5 py-1 rounded-lg text-xs font-medium
             bg-${stockStatus.color}-500/10 text-${stockStatus.color}-400
           `}>
             {stockStatus.text}
+          </span>
+          <span className="text-xs text-gray-400">
+            Sales: {product.sales}
           </span>
         </div>
       </div>
@@ -90,7 +93,7 @@ const ProductCard = ({ product, onEdit, onDelete, custom }) => {
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          onClick={onEdit}
+          onClick={() => onEdit(product)}
           className="p-2 rounded-lg bg-gray-700/50 hover:bg-gray-600/50 
             text-gray-300 transition-colors"
         >
@@ -99,7 +102,7 @@ const ProductCard = ({ product, onEdit, onDelete, custom }) => {
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          onClick={onDelete}
+          onClick={() => onDelete(product.id)}
           className="p-2 rounded-lg bg-gray-700/50 hover:bg-red-500/50 
             text-gray-300 hover:text-red-400 transition-colors"
         >

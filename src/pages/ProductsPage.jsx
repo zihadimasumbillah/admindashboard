@@ -35,6 +35,8 @@ const ProductsPage = () => {
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [editingProduct, setEditingProduct] = useState(null);
+  // Remove the state if it's not being used
+  const isSidebarOpen = true;
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -221,8 +223,15 @@ const ProductsPage = () => {
   // Product operations
   const handleAddProduct = useCallback(async (product) => {
     try {
-      const newProduct = { ...product, id: Date.now() };
+      const newProduct = {
+        ...product,
+        id: Date.now(),
+        price: parseFloat(product.price) || 0,
+        stock: parseInt(product.stock) || 0,
+        sales: parseInt(product.sales) || 0 // Ensure sales is initialized
+      };
       setData(prev => [...prev, newProduct]);
+      setShowAddProduct(false);
     } catch (err) {
       setError(err.message);
     }
@@ -230,9 +239,15 @@ const ProductsPage = () => {
 
   const handleUpdateProduct = useCallback(async (updatedProduct) => {
     try {
-      setData(prev => prev.map(p => 
-        p.id === updatedProduct.id ? updatedProduct : p
-      ));
+      setData(prev => 
+        prev.map(p => p.id === updatedProduct.id ? {
+          ...updatedProduct,
+          price: parseFloat(updatedProduct.price),
+          stock: parseInt(updatedProduct.stock),
+          sales: parseInt(updatedProduct.sales || 0) // Ensure sales is included
+        } : p)
+      );
+      setEditingProduct(null);
     } catch (err) {
       setError(err.message);
     }
@@ -251,13 +266,20 @@ const ProductsPage = () => {
 
   return (
     <div className="min-h-screen pb-8">
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+      <div className={`
+        mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6
+        transition-all duration-300
+        ${isSidebarOpen 
+          ? 'max-w-[1440px] md:max-w-[calc(100vw-280px)]' 
+          : 'max-w-[1440px] md:max-w-[calc(100vw-120px)]'}
+      `}>
+
         {/* Stats Cards */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="show" 
-          className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+          className="grid grid-cols-2 xl:grid-cols-4 gap-4"
         >
           {statsData.map((stat) => (
             <motion.div
@@ -272,45 +294,44 @@ const ProductsPage = () => {
 
         {/* Main Container */}
         <div className="bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50">
-          {/* Search, Filters & Controls Container */}
-          <div className="bg-gray-800/40 backdrop-blur-sm rounded-xl border border-gray-700/50">
-            <div className="p-4 border-b border-gray-700/50">
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col sm:flex-row items-center gap-4">
-                  {/* Search & Categories */}
-                  <div className="flex flex-col sm:flex-row w-full gap-4">
-                    {/* Search */}
-                    <div className="w-full sm:w-[300px] relative">
+          {/* Search & Controls Container */}
+          <div className="p-3 sm:p-4 border-b border-gray-700/50">
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              {/* Search and Actions Group */}
+              <div className="flex flex-1 flex-col sm:flex-row items-center gap-3">
+                <div className="flex flex-col sm:flex-row items-center gap-4 mb-4">
+                  {/* Search Container - Updated classes */}
+                  <div className="w-full sm:w-auto sm:min-w-[180px] md:min-w-[200px] lg:min-w-[840px]">
+                    <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                       <input
                         type="text"
-                        placeholder="Search products..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search products..."
                         className="w-full pl-10 pr-4 py-2.5 bg-gray-700/50 border border-gray-600/50 
-                          rounded-xl text-gray-100 placeholder:text-gray-400 focus:outline-none 
-                          focus:ring-2 focus:ring-indigo-500/50"
+                          rounded-xl text-gray-100 placeholder:text-gray-400 
+                          focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                       />
                     </div>
+                  </div>
 
-                    {/* Categories */}
+                  {/* View Toggle and Actions - Keep existing code */}
+                  <div className="flex items-center gap-2 ml-auto">
                     <ProductFilters 
                       filters={filters}
                       setFilters={handleFilterChange}
                       categories={[...new Set(data.map(p => p.category))]}
                       onExport={handleExport}
+                      className="w-auto"
                     />
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-2">
+                    
+                    {/* Actions Group */}
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => setShowAddProduct(true)}
-                      className="p-2.5 flex items-center justify-center
-                        bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl
-                        transition-colors duration-200 shadow-lg shadow-indigo-500/25"
+                      className="p-2.5 bg-indigo-500 hover:bg-indigo-600 rounded-xl text-white"
                     >
                       <Plus className="w-5 h-5" />
                     </motion.button>
@@ -319,21 +340,13 @@ const ProductsPage = () => {
                     <div className="flex items-center bg-gray-700/50 rounded-xl p-1">
                       <button
                         onClick={() => setView('grid')}
-                        className={`p-2 rounded-lg ${
-                          view === 'grid' 
-                            ? 'bg-gray-600 text-gray-100' 
-                            : 'text-gray-400 hover:text-gray-300'
-                        }`}
+                        className={`p-2 rounded-lg ${view === 'grid' ? 'bg-gray-600 text-gray-100' : 'text-gray-400'}`}
                       >
                         <Grid className="w-5 h-5" />
                       </button>
                       <button
                         onClick={() => setView('table')}
-                        className={`p-2 rounded-lg ${
-                          view === 'table' 
-                            ? 'bg-gray-600 text-gray-100' 
-                            : 'text-gray-400 hover:text-gray-300'
-                        }`}
+                        className={`p-2 rounded-lg ${view === 'table' ? 'bg-gray-600 text-gray-100' : 'text-gray-400'}`}
                       >
                         <List className="w-5 h-5" />
                       </button>
@@ -351,7 +364,13 @@ const ProductsPage = () => {
                 variants={containerVariants}
                 initial="hidden"
                 animate="show"
-                className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                className={`
+                  p-3 sm:p-4 grid gap-4 md:gap-5 justify-items-center
+                  grid-cols-1 sm:grid-cols-2 
+                  ${isSidebarOpen 
+                    ? 'lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4' 
+                    : 'lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5'}
+                `}
               >
                 {filteredProducts.map((product, index) => (
                   <ProductCard 
