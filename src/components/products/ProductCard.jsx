@@ -41,7 +41,7 @@ const ProductCard = ({ product, onEdit, onDelete, custom }) => {
       exit="hidden"
       custom={custom}
       whileHover={{ 
-        rotateY: 180,
+        rotateY: window.innerWidth > 640 ? 180 : 0, 
         transition: {
           duration: 0.8,
           ease: "easeInOut"
@@ -51,16 +51,44 @@ const ProductCard = ({ product, onEdit, onDelete, custom }) => {
         perspective: 2000,
         transformStyle: "preserve-3d"
       }}
-      className="group relative w-full max-w-sm h-[300px] sm:h-[400px] 
-        transition-all duration-300"
+      className="group relative w-full max-w-sm h-[300px] sm:h-[400px] transition-all duration-300"
     >
       {/* Front Face */}
       <motion.div
-        style={{ backfaceVisibility: "hidden" }}
+        initial={{ rotateY: 0 }}
+        style={{ 
+          backfaceVisibility: "hidden",
+          zIndex: 1
+        }}
         className="absolute inset-0 w-full h-full"
       >
         <div className="relative h-full w-full bg-gray-800/40 backdrop-blur-sm rounded-xl 
           border border-gray-700/50 overflow-hidden">
+  
+          <div className="sm:hidden absolute top-4 right-4 z-10 flex items-center gap-2">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => onEdit(product)}
+              className="p-2 rounded-lg bg-gray-800/80 hover:bg-indigo-500/90 
+                text-gray-300 hover:text-white shadow-lg backdrop-blur-sm
+                transition-all duration-300 border border-gray-600/50"
+            >
+              <Edit className="w-4 h-4" />
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => onDelete(product.id)}
+              className="p-2 rounded-lg bg-gray-800/80 hover:bg-red-500/90 
+                text-gray-300 hover:text-white shadow-lg backdrop-blur-sm
+                transition-all duration-300 border border-gray-600/50"
+            >
+              <Trash2 className="w-4 h-4" />
+            </motion.button>
+          </div>
+
+          {/* Image Container */}
           <div className="h-full w-full">
             <img 
               src={product.image} 
@@ -70,21 +98,40 @@ const ProductCard = ({ product, onEdit, onDelete, custom }) => {
             <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 to-transparent" />
           </div>
           
-          <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-5">
-            <h3 className="text-base sm:text-lg font-medium text-gray-100 line-clamp-1">
+          {/* Mobile Product Info */}
+          <div className="sm:hidden absolute bottom-0 left-0 right-0 p-4 space-y-2">
+            <h3 className="text-base font-medium text-gray-100 line-clamp-1">
               {product.name}
             </h3>
+            <div className="flex items-center justify-between">
+              <p className="text-lg font-bold text-indigo-400">
+                ${product.price.toFixed(2)}
+              </p>
+              <span className={`
+                px-2 py-1 rounded-lg text-xs font-medium
+                bg-${stockStatus.color}-500/10 text-${stockStatus.color}-400
+                border border-${stockStatus.color}-500/20
+              `}>
+                {stockStatus.text}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-400">
+              <span className="text-xs">Total Sales:</span>
+              <span className="text-xs font-medium">{product.sales}</span>
+            </div>
           </div>
         </div>
       </motion.div>
 
-      {/* Back Face */}
+      {/* Back Face - Hidden on Mobile */}
       <motion.div
+        initial={{ rotateY: 180 }}
         style={{ 
           backfaceVisibility: "hidden",
-          transform: "rotateY(180deg)"
+          transform: "rotateY(180deg)",
+          zIndex: 0
         }}
-        className="absolute inset-0 w-full h-full"
+        className="absolute inset-0 w-full h-full hidden sm:block"
       >
         <div className="h-full w-full p-4 sm:p-6 bg-gray-800/40 backdrop-blur-sm rounded-xl 
           border border-gray-700/50 flex flex-col gap-4 sm:gap-6"
