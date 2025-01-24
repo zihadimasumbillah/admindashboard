@@ -228,7 +228,7 @@ const ProductsPage = () => {
         id: Date.now(),
         price: parseFloat(product.price) || 0,
         stock: parseInt(product.stock) || 0,
-        sales: parseInt(product.sales) || 0 // Ensure sales is initialized
+        sales: parseInt(product.sales) || 0 
       };
       setData(prev => [...prev, newProduct]);
       setShowAddProduct(false);
@@ -244,7 +244,7 @@ const ProductsPage = () => {
           ...updatedProduct,
           price: parseFloat(updatedProduct.price),
           stock: parseInt(updatedProduct.stock),
-          sales: parseInt(updatedProduct.sales || 0) // Ensure sales is included
+          sales: parseInt(updatedProduct.sales || 0) 
         } : p)
       );
       setEditingProduct(null);
@@ -298,59 +298,58 @@ const ProductsPage = () => {
           <div className="p-3 sm:p-4 border-b border-gray-700/50">
             <div className="flex flex-col sm:flex-row items-center gap-3">
               {/* Search and Actions Group */}
-              <div className="flex flex-1 flex-col sm:flex-row items-center gap-3">
-                <div className="flex flex-col sm:flex-row items-center gap-4 mb-4">
-                  {/* Search Container - Updated classes */}
-                  <div className="w-full sm:w-auto sm:min-w-[180px] md:min-w-[200px] lg:min-w-[840px]">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search products..."
-                        className="w-full pl-10 pr-4 py-2.5 bg-gray-700/50 border border-gray-600/50 
-                          rounded-xl text-gray-100 placeholder:text-gray-400 
-                          focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-                      />
-                    </div>
-                  </div>
-
-                  {/* View Toggle and Actions - Keep existing code */}
-                  <div className="flex items-center gap-2 ml-auto">
-                    <ProductFilters 
-                      filters={filters}
-                      setFilters={handleFilterChange}
-                      categories={[...new Set(data.map(p => p.category))]}
-                      onExport={handleExport}
-                      className="w-auto"
+              <div className="w-full flex flex-row items-center gap-3">
+                {/* Search Container */}
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search products..."
+                      className="w-full pl-10 pr-4 py-2.5 bg-gray-700/50 border border-gray-600/50 
+                        rounded-xl text-gray-100 placeholder:text-gray-400 
+                        focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                     />
-                    
-                    {/* Actions Group */}
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => setShowAddProduct(true)}
-                      className="p-2.5 bg-indigo-500 hover:bg-indigo-600 rounded-xl text-white"
-                    >
-                      <Plus className="w-5 h-5" />
-                    </motion.button>
+                  </div>
+                </div>
 
-                    {/* View Toggle */}
-                    <div className="flex items-center bg-gray-700/50 rounded-xl p-1">
-                      <button
-                        onClick={() => setView('grid')}
-                        className={`p-2 rounded-lg ${view === 'grid' ? 'bg-gray-600 text-gray-100' : 'text-gray-400'}`}
-                      >
-                        <Grid className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => setView('table')}
-                        className={`p-2 rounded-lg ${view === 'table' ? 'bg-gray-600 text-gray-100' : 'text-gray-400'}`}
-                      >
-                        <List className="w-5 h-5" />
-                      </button>
-                    </div>
+                {/* Controls Group - Now inline with search on mobile */}
+                <div className="flex items-center gap-2">
+                  {/* Filters */}
+                  <ProductFilters 
+                    filters={filters}
+                    setFilters={handleFilterChange}
+                    categories={[...new Set(data.map(p => p.category))]}
+                    onExport={handleExport}
+                    className="w-auto"
+                  />
+                  
+                  {/* Add Product Button */}
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setShowAddProduct(true)}
+                    className="p-2.5 bg-indigo-500 hover:bg-indigo-600 rounded-xl text-white"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </motion.button>
+
+                  {/* View Toggle */}
+                  <div className="flex items-center bg-gray-700/50 rounded-xl p-1">
+                    <button
+                      onClick={() => setView('grid')}
+                      className={`p-2 rounded-lg ${view === 'grid' ? 'bg-gray-600 text-gray-100' : 'text-gray-400'}`}
+                    >
+                      <Grid className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => setView('table')}
+                      className={`p-2 rounded-lg ${view === 'table' ? 'bg-gray-600 text-gray-100' : 'text-gray-400'}`}
+                    >
+                      <List className="w-5 h-5" />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -383,7 +382,6 @@ const ProductsPage = () => {
                 ))}
               </motion.div>
             ) : (
-              // Updated table container with proper overflow handling
               <div className="max-w-[90vw] overflow-hidden">
                 <div className="overflow-x-auto">
                   <div className="inline-block min-w-full">

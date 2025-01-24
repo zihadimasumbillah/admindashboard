@@ -61,14 +61,14 @@ const ProductsTable = memo(({
            
 
             {/* Image header */}
-            <th scope="col" className="px-6 py-4 w-[100px] font-medium">
+            <th scope="col" className="px-4 sm:px-6 py-4 w-[100px] font-medium">
               Image
             </th>
 
             {/* Product Name header */}
             <th 
               scope="col"
-              className="px-6 py-4 min-w-[200px] text-left font-medium cursor-pointer hover:bg-gray-700/50"
+              className="pl-8 sm:pl-6 pr-4 sm:pr-6 py-4 min-w-[200px] text-left font-medium cursor-pointer hover:bg-gray-700/50"
               onClick={() => handleSort('name')}
             >
               <div className="flex items-center gap-1">
@@ -128,14 +128,14 @@ const ProductsTable = memo(({
                 className="bg-gray-800/20 backdrop-blur-sm hover:bg-gray-800/40 text-sm md:text-base"
               >
                
-                <td className="px-6 py-4">
+                <td className="px-4 sm:px-6 py-4">
                   <img 
                     src={product.image} 
                     alt={product.name}
                     className="w-12 h-12 rounded-lg object-cover"
                   />
                 </td>
-                <td className="px-6 py-4">
+                <td className="pl-8 sm:pl-6 pr-4 sm:pr-6 py-4">
                   <div className="font-medium text-gray-200">{product.name}</div>
                 </td>
                 <td className="px-6 py-4 text-gray-300">{product.category}</td>

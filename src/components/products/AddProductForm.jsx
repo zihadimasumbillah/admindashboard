@@ -1,67 +1,94 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { X, Upload, Image as ImageIcon } from 'lucide-react';
+import { X, Upload } from 'lucide-react';
 import PropTypes from 'prop-types';
 
 const AddProductForm = ({ product, onClose, onSubmit }) => {
   const fileInputRef = useRef(null);
-  
-  // Initialize form values with proper type conversion
+
   const [formData, setFormData] = useState({
-    name: product?.name || '',
-    category: product?.category || 'Electronics',
+    name: product?.name ?? '',
+    category: product?.category ?? 'Electronics',
     price: product?.price ? parseFloat(product.price).toString() : '0',
     stock: product?.stock ? parseInt(product.stock).toString() : '0',
-    sales: product?.sales ? parseInt(product.sales).toString() : '0', // Add sales
-    image: product?.image || '',
-    imageUrl: product?.imageUrl || ''
+    sales: product?.sales ? parseInt(product.sales).toString() : '0',
+    image: product?.image ?? '',
+    imageUrl: product?.imageUrl ?? ''
   });
-
-  // Rest of your existing state declarations
-  const [preview, setPreview] = useState(product?.image || product?.imageUrl || '');
+  const [preview, setPreview] = useState(formData.image || formData.imageUrl || '');
   const [isDragging, setIsDragging] = useState(false);
-  const [imageSource, setImageSource] = useState('upload');
+  const [imageSource, setImageSource] = useState(formData.imageUrl ? 'url' : 'upload');
 
-  const handleImageChange = (file) => {
-    if (file && file.type.startsWith('image/')) {
+  const handleImageUrl = useCallback((url) => {
+    const newUrl = url ?? '';
+    setFormData(prev => ({
+      ...prev,
+      image: '',
+      imageUrl: newUrl
+    }));
+    setPreview(newUrl);
+  }, []);
+
+  const handleImageSourceChange = useCallback((source) => {
+    setImageSource(source);
+    setFormData(prev => ({
+      ...prev,
+      image: '',
+      imageUrl: ''
+    }));
+    setPreview('');
+  }, []);
+
+  const handleImageChange = useCallback((file) => {
+    if (file?.type?.startsWith('image/')) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        const imageData = reader.result;
-        setPreview(imageData);
+        const result = reader.result ?? '';
+        setPreview(result);
         setFormData(prev => ({
           ...prev,
-          image: imageData,
-          imageUrl: '' // Clear URL when uploading file
+          image: result,
+          imageUrl: ''
         }));
       };
       reader.readAsDataURL(file);
     }
-  };
+  }, []);
 
-  const handleImageUrl = (url) => {
-    setPreview(url);
+  const handleInputChange = useCallback((field, value) => {
     setFormData(prev => ({
       ...prev,
-      imageUrl: url,
-      image: '' // Clear image data when using URL
+      [field]: value ?? '' 
     }));
-  };
+  }, []);
 
-  const handleDrop = (e) => {
+  const handleDrop = useCallback((e) => {
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files[0];
-    if (file?.type.startsWith('image/')) {
+    if (file && file.type.startsWith('image/')) {
       handleImageChange(file);
     }
-  };
+  }, [handleImageChange]);
 
-  const handleDragOver = (e) => {
+  const handleDragOver = useCallback((e) => {
     e.preventDefault();
     setIsDragging(true);
-  };
+  }, []);
 
-  // Update handleSubmit to ensure proper type conversion
+  const handleDragLeave = useCallback((e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  }, []);
+
+  
+  const handleNumericInput = useCallback((e, field) => {
+    const val = e.target.value;
+    if (val === '' || /^\d*\.?\d*$/.test(val)) {
+      setFormData(prev => ({ ...prev, [field]: val }));
+    }
+  }, []);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const submittedData = {
@@ -70,18 +97,10 @@ const AddProductForm = ({ product, onClose, onSubmit }) => {
       price: parseFloat(formData.price) || 0,
       stock: parseInt(formData.stock) || 0,
       sales: parseInt(formData.sales) || 0,
-      image: formData.imageUrl || formData.image // Use URL if available, otherwise use uploaded image
+      image: formData.image || formData.imageUrl || ''
     };
     onSubmit(submittedData);
     onClose();
-  };
-
-  // Add validation for numeric inputs
-  const handleNumericInput = (e, field) => {
-    const value = e.target.value;
-    if (value === '' || value === '0' || /^\d*\.?\d*$/.test(value)) {
-      setFormData(prev => ({ ...prev, [field]: value }));
-    }
   };
 
   return (
@@ -122,7 +141,7 @@ const AddProductForm = ({ product, onClose, onSubmit }) => {
               <div className="flex items-center gap-4 mb-4">
                 <button
                   type="button"
-                  onClick={() => setImageSource('upload')}
+                  onClick={() => handleImageSourceChange('upload')}
                   className={`flex-1 py-2 px-4 rounded-lg transition-colors ${
                     imageSource === 'upload' 
                       ? 'bg-indigo-500 text-white' 
@@ -133,7 +152,7 @@ const AddProductForm = ({ product, onClose, onSubmit }) => {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setImageSource('url')}
+                  onClick={() => handleImageSourceChange('url')}
                   className={`flex-1 py-2 px-4 rounded-lg transition-colors ${
                     imageSource === 'url' 
                       ? 'bg-indigo-500 text-white' 
@@ -147,55 +166,31 @@ const AddProductForm = ({ product, onClose, onSubmit }) => {
               {imageSource === 'upload' ? (
                 /* Image Upload Section */
                 <div
-                  className={`relative border-2 border-dashed rounded-xl p-4 text-center
-                    ${isDragging ? 'border-indigo-500 bg-indigo-500/10' : 'border-gray-600'}
-                    ${preview ? 'h-[200px]' : 'h-[150px]'}
-                    transition-all duration-200 cursor-pointer`}
-                  onClick={() => fileInputRef.current?.click()}
-                  onDrop={handleDrop}
+                  className={`
+                    relative h-[180px] w-full rounded-xl overflow-hidden
+                    border-2 border-dashed transition-colors duration-200
+                    ${isDragging ? 'border-indigo-500 bg-indigo-500/10' : 'border-gray-600/50 bg-gray-700/50'}
+                  `}
                   onDragOver={handleDragOver}
-                  onDragLeave={() => setIsDragging(false)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
                 >
                   {preview ? (
-                    <div className="relative h-48 group"> {/* Fixed height */}
-                      <img 
-                        src={preview} 
-                        alt="Preview"
-                        className="w-full h-full object-contain rounded-lg"
-                      />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100
-                        flex items-center justify-center gap-2 transition-opacity rounded-lg">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            fileInputRef.current?.click();
-                          }}
-                          className="p-2 bg-gray-800/50 rounded-lg hover:bg-gray-700/50
-                            text-gray-300 transition-colors"
-                        >
-                          <Upload className="w-5 h-5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setPreview('');
-                            setFormData(prev => ({ ...prev, image: '', imageUrl: '' }));
-                          }}
-                          className="p-2 bg-gray-800/50 rounded-lg hover:bg-red-500/50
-                            text-gray-300 hover:text-red-400 transition-colors"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </div>
+                    <img
+                      src={preview}
+                      alt="Preview"
+                      className="w-full h-full object-contain p-2"
+                    />
                   ) : (
-                    <div className="h-full flex flex-col items-center justify-center gap-2 text-gray-400">
-                      <ImageIcon className="w-8 h-8" />
-                      <p className="text-sm">Drag & drop an image here, or click to select</p>
+                    <div className="flex flex-col items-center justify-center h-full p-4 space-y-2">
+                      <Upload className="w-8 h-8 text-gray-400" />
+                      <p className="text-sm text-gray-400 text-center">
+                        Drag & drop an image here, or click to select
+                      </p>
                     </div>
                   )}
+                  
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -212,7 +207,7 @@ const AddProductForm = ({ product, onClose, onSubmit }) => {
                   </label>
                   <input
                     type="url"
-                    value={formData.imageUrl || ''} // Ensure value is never undefined
+                    value={formData.imageUrl}
                     onChange={(e) => handleImageUrl(e.target.value)}
                     placeholder="https://example.com/image.jpg"
                     className="w-full px-4 py-2.5 bg-gray-700/50 border border-gray-600/50 
@@ -238,8 +233,8 @@ const AddProductForm = ({ product, onClose, onSubmit }) => {
                 <input
                   type="text"
                   required
-                  value={formData.name}
-                  onChange={e => setFormData({...formData, name: e.target.value})}
+                  value={formData.name || ''}
+                  onChange={e => handleInputChange('name', e.target.value)}
                   className="w-full px-4 py-2.5 bg-gray-700/50 border border-gray-600/50 
                     rounded-xl text-gray-100 placeholder:text-gray-400 
                     focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
@@ -253,7 +248,7 @@ const AddProductForm = ({ product, onClose, onSubmit }) => {
                 <select
                   required
                   value={formData.category}
-                  onChange={e => setFormData({...formData, category: e.target.value})}
+                  onChange={e => handleInputChange('category', e.target.value)}
                   className="w-full px-4 py-2.5 bg-gray-700/50 border border-gray-600/50 
                     rounded-xl text-gray-100 focus:outline-none 
                     focus:ring-2 focus:ring-indigo-500/50"
